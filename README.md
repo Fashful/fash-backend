@@ -15,7 +15,9 @@ Follow the below instructions to set up the database.
 python/python3 -m venv .venv
 # enter virtual env
 source .venv/bin/activate
-# install the package
+# install packages
 pip install <package>
+# install requirements file
+pip install -r requirements.txt
 # update requirements file
 pip freeze > requirements.txt
