@@ -1,8 +1,10 @@
 import os
 from dataclasses import dataclass
 from flask_sqlalchemy import SQLAlchemy
+import flask_praetorian
 
 db = SQLAlchemy()
+guard = flask_praetorian.Praetorian()
 
 @dataclass
 class User(db.Model):
@@ -10,7 +12,6 @@ class User(db.Model):
 
     id = db.Column(db.String(100), primary_key=True)
     username = db.Column(db.String(100), unique=True)
-    email = db.Column(db.String(100), unique=True)
     name = db.Column(db.String(100))
     hashed_password = db.Column(db.Text)
 
@@ -48,7 +49,7 @@ class User(db.Model):
 
     @property
     def email(self):
-        return self.email
+        return self.username
 
     @classmethod
     def lookup(cls, username):

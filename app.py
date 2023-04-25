@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 import flask_cors
-from models import db, User
+from models import db, guard, User
 from dotenv import load_dotenv
 
 # def create_app():
@@ -12,6 +12,7 @@ cors = flask_cors.CORS()
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get('SQLALCHEMY_DATABASE_URI')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config["SECRET_KEY"] = os.getenv('SECRET_KEY')
+guard.init_app(app, User)
 db.init_app(app)
 migrate = Migrate(app, db)
 cors.init_app(app)
