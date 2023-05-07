@@ -14,6 +14,7 @@ class User(db.Model):
     username = db.Column(db.String(100), unique=True)
     name = db.Column(db.String(100))
     hashed_password = db.Column(db.Text)
+    roles = db.Column(db.String(255))
 
     @property
     def identity(self):
@@ -71,17 +72,12 @@ class User(db.Model):
         """
         return cls.query.get(id)
 
-    def is_valid(self):
-        return self.is_active
-
     def to_dict(self):
         return {
             "id": self.id,
             "username": self.username,
             "name": self.name,
             "roles": self.roles,
-            "is_active": self.is_active,
-            "is_deleted": self.is_deleted
         }
 
     def update(self, **kwargs):
