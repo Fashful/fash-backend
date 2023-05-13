@@ -1,7 +1,7 @@
 
 from flask import jsonify, request, Blueprint
-from models import db, guard, User, Post, PostLike
-from app.postRoute.errors import custom404, bad_request
+from models import db, guard, User, Post, PostLike, current_user
+from errors import custom404, bad_request
 
 likesRoute = Blueprint('likesRoute', __name__)
 

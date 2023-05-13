@@ -17,28 +17,28 @@ def after_request(response):
 def login_post():
     # get request info
     body = request.get_json()
-    username = body['username']
+    email = body['email']
     password = body['password']
     try:
         # authenticate user and send token
-        user =  User.query.filter(func.lower(User.username) == func.lower(username)).first()
+        email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
         if user:
             try:
-                user = guard.authenticate(func.lower(username), password)
+                user = guard.authenticate(func.lower(email), password)
                 if user:
                     ret = {
                         'access_token': guard.encode_jwt_token(user, ),
                         'user': {
                             'id': user.id,
-                            'username': user.username,
+                            'email': user.email,
                             'name': user.name,
                         }
                     }
                     return success(data=ret)
-                return failure("The username and password combination is incorrect.")
+                return failure("The uemail and password combination is incorrect.")
             except Exception as e:
                 print(len(str(e)))
-                if str(e) == "The username and/or password are incorrect (401)":
+                if str(e) == "The email and/or password are incorrect (401)":
                     return failure({"error": "The username and password combination is incorrect."})
                 return failure({"error": e})
         else:
@@ -53,18 +53,23 @@ def signup_post():
     body = request.get_json()
     name = body['name']
     username = body['username']
+    email = body['email']
     password = body['password']
 
     # if this returns a user, then the email already exists in database
     user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
+    email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
 
-    if user:  # if a user is found, redirect back to signup page so user can try again
-        ret = {'error': 'User already exists'}
+    if user: 
+        ret = {'error': 'Username already exists'}
+        return ret, 200
+    
+    if email: 
+        ret = {'error': 'Email already exists'}
         return ret, 200
 
-    # create a new user with the form data. Hash the password so the plaintext version isn't saved.
     try:
-        new_user = User(id=str(uuid.uuid4()), username=func.lower(username), name=name, 
+        new_user = User(id=str(uuid.uuid4()), email=func.lower(email), name=name, username=username,
                     hashed_password=guard.hash_password(password))
 
         # add the new user to the database

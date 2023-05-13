@@ -26,7 +26,8 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.String(100), primary_key=True)
-    username = db.Column(db.String(100), unique=True)
+    email = db.Column(db.String(100), unique=True, index=True)
+    username = db.Column(db.String(100), unique=True, index=True)
     name = db.Column(db.String(100))
     hashed_password = db.Column(db.Text)
     roles = db.Column(db.String(255))
@@ -88,7 +89,7 @@ class User(db.Model):
 
     @property
     def email(self):
-        return self.username
+        return self.email
 
     @classmethod
     def lookup(cls, username):
@@ -114,10 +115,16 @@ class User(db.Model):
         return {
             "id": self.id,
             "username": self.username,
+            "email": self.email,
             "name": self.name,
             "roles": self.roles,
             "created_at": self.created_at,
             "user_image_url": self.user_image_url,
+            "posts": self.posts,
+            "comments": self.comments,
+            "liked": self.liked,
+            "following_to_list": self.following_to_list,
+            "got_followed_back_list": self.got_followed_back_list
         }
 
     def update(self, **kwargs):
