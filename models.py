@@ -1,11 +1,26 @@
 from datetime import datetime
-import os
+import flask import abort
 from dataclasses import dataclass
 from flask_sqlalchemy import SQLAlchemy
 import flask_praetorian
 
 db = SQLAlchemy()
 guard = flask_praetorian.Praetorian()
+
+@dataclass
+class Follow(db.Model):
+    __tablename__ = 'follows'
+
+    # id of a person who follows someone 
+    follower_id = db.Column(
+        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    # id of the person to whom we are following to 
+    following_to = db.Column(
+        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    # time when they got followed/started following
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
 @dataclass
 class User(db.Model):
@@ -16,6 +31,29 @@ class User(db.Model):
     name = db.Column(db.String(100))
     hashed_password = db.Column(db.Text)
     roles = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_image_url = db.Column(db.Text)
+    posts = db.relationship('Post', backref='author', lazy='dynamic', cascade='all, delete')
+    comments = db.relationship('Comment', backref='author_backref', lazy='dynamic')
+    liked = db.relationship('PostLike', backref='user_like_backref', lazy='dynamic')
+
+    # example if user1 follows user2 and user3 we have => [<Follow 1, 2>, <Follow 1, 3>]
+    following_to_list = db.relationship(
+        'Follow',
+        foreign_keys=[Follow.follower_id],
+        backref=db.backref('follower_backref', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'
+    )
+
+    # example if user3 follows user1 (current user) we have => [<Follow 3, 1>]
+    got_followed_back_list = db.relationship(
+        'Follow',
+        foreign_keys=[Follow.following_to],
+        backref=db.backref('following_to_backref', lazy='joined'),
+        lazy='dynamic',
+        cascade='all, delete-orphan'  
+    )
 
     @property
     def identity(self):
@@ -79,6 +117,8 @@ class User(db.Model):
             "username": self.username,
             "name": self.name,
             "roles": self.roles,
+            "created_at": self.created_at,
+            "user_image_url": self.user_image_url,
         }
 
     def update(self, **kwargs):
@@ -86,52 +126,148 @@ class User(db.Model):
             if hasattr(self, key):
                 setattr(self, key, value)
 
-@dataclass
-class Follow(db.Model):
-    __tablename__ = 'follows'
+    def is_following(self, user):
+        # print("user data ===>", user) # returns the whole user
+        if user.id is None:
+            return False
 
-    # id of a person who follows someone 
-    follower_id = db.Column(
-        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+        # if result is empty (means None) then user is not following the given user
+        # checking if current follower id gets a match with
+        return self.following_to_list.filter_by(following_to=user.id).first() is not None
 
-    # id of the person to whom we are following to 
-    following_to = db.Column(
-        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    def follow(self, user):
+        if not self.is_following(user):
+            follow_data = Follow(follower_backref=self,
+                                 following_to_backref=user)
+            db.session.add(follow_data)
+        else:
+            abort(403, "you are already following the user")
 
-    # time when they got followed/started following
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    def unfollow(self, user):
+        if self.is_following(user):
+            user_to_unfollow = self.following_to_list.filter_by(
+                following_to=user.id).first()
+            if user_to_unfollow:
+                db.session.delete(user_to_unfollow)
+            else:
+                abort(403, "user not found")
+        else:
+            abort(403, "you need to follow the user first.")
 
-@dataclass
-class Message(db.Model):
-    __tablename__ = 'messages'
+    def to_json(self):
+
+        followers_data = []
+        following_to_data = []
+
+        user_followers = self.got_followed_back_list.all()
+        user_followed = self.following_to_list.all()
+
+        for each_follower in user_followers:
+            locate_user = User.query.get(each_follower.follower_id)
+            followers_data.append({
+                "user_id": locate_user.id,
+                "username": locate_user.username
+            })
+
+        for each_user in user_followed:
+            locate_user = User.query.get(each_user.following_to)
+            following_to_data.append({
+                "user_id": locate_user.id,
+                "username": locate_user.username
+            })
+
+        json_user = {
+            'user_id': self.id,
+            'username': self.username,
+            'followers': followers_data,
+            'following': following_to_data,
+            'roles': self.roles,
+            'profile_image': self.user_image_url,
+            'email': self.email,
+            'posts': [each_post.to_json() for each_post in self.posts]
+        }
+
+        return json_user
+
+    def less_user_info_json(self):
+
+        json_data = {
+            'user_id': self.id,
+            'username': self.username,
+            'email': self.email,
+            'roles': self.roles,
+            'profile_image': self.user_image_url, 
+        }
+
+        return json_data
+
+class Post(db.Model):
+    __tablename__ = 'posts'
 
     id = db.Column(db.Integer, primary_key=True)
-    body = db.Column(db.Text())
-    sent_by = db.Column(db.Integer, db.ForeignKey('users.id'))
-    sent_for = db.Column(db.Integer, db.ForeignKey('users.id'))
-    shared_message = db.Column(db.Boolean, default=False)
-    shared_post_path = db.Column(db.String(200))
-    shared_post_of_username = db.Column(db.String(200))
+    body = db.Column(db.Text)
+    uploaded_content_url = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    comments = db.relationship('Comment', backref='post_backref', lazy='dynamic')
+    likes = db.relationship('PostLike', backref='post_like_backref', lazy='dynamic')
 
     def __repr__(self):
-        return '<Message %r>' % self.body
+        return '<Post %r>' % self.body
+    
+    def to_json(self):
+        locate_user = User.query.get(self.author_id)     
 
-    def msg_json(self):
+        json_post = {
+            'id': self.id,
+            'author_details': locate_user.less_user_info_json(), 
+            'uploaded_content_url': self.uploaded_content_url,
+            'body': self.body,
+            'timestamp': self.timestamp,
+            'likes': [each_like.like_json() for each_like in self.likes],
+            'comments': [each_comm.comment_in_json() for each_comm in self.comments.order_by(Comment.timestamp.desc())]
+        }
 
-        user_details = User.query.get(self.sent_for)        
+        return json_post
+
+class Comment(db.Model):
+    __tablename__ = 'comments'
+
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    def comment_in_json(self):
+
+        the_user = User.query.get(self.author_id)
+        commented_by_user = the_user.less_user_info_json()
 
         json_response = {
-            'message_id': self.id,
-            'sender': self.sent_by,
-            'recipient_id': self.sent_for,
-            'recipient_name': user_details.username,
-            'sender_name': User.query.get(self.sent_by).username,
-            'shared_status': self.shared_message,
-            'shared_post_path': self.shared_post_path,
-            'shared_post_of_username': self.shared_post_of_username,
+            'id': self.id,
             'body': self.body,
-            'sent_on': self.timestamp
+            'timestamp': self.timestamp,
+            'commented_by': commented_by_user,
+            'post_id': self.post_id
+        }
+
+        return json_response
+    
+class PostLike(db.Model):
+    __tablename__ = 'postlikes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+
+    def like_json(self):
+
+        json_response = {
+            'id': self.id,
+            'liked_by': self.user_id,
+            'post_liked': self.post_id,
+            'liked_by_username': User.query.get(self.user_id).username
         }
 
         return json_response
