@@ -1,5 +1,5 @@
 from datetime import datetime
-import flask import abort
+from flask import abort
 from dataclasses import dataclass
 from flask_sqlalchemy import SQLAlchemy
 import flask_praetorian
