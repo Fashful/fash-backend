@@ -2,7 +2,7 @@ import os
 from flask import Flask, request, jsonify
 from flask_migrate import Migrate
 import flask_cors
-from models import db, guard, User
+from models import db, guard, User, Comment, Post, PostLike, Follow
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,6 +15,9 @@ guard.init_app(app, User)
 db.init_app(app)
 migrate = Migrate(app, db)
 cors.init_app(app)
+
+with app.app_context():
+    db.create_all()
 
 # blueprint for non-auth parts of app
 from main import main as main_blueprint

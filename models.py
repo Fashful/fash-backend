@@ -7,17 +7,16 @@ import flask_praetorian
 db = SQLAlchemy()
 guard = flask_praetorian.Praetorian()
 
-@dataclass
 class Follow(db.Model):
     __tablename__ = 'follows'
 
     # id of a person who follows someone 
     follower_id = db.Column(
-        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+        db.String(100), db.ForeignKey('users.id'), primary_key=True)
 
     # id of the person to whom we are following to 
     following_to = db.Column(
-        db.Integer, db.ForeignKey('users.id'), primary_key=True)
+        db.String(100), db.ForeignKey('users.id'), primary_key=True)
 
     # time when they got followed/started following
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
@@ -204,11 +203,11 @@ class User(db.Model):
 class Post(db.Model):
     __tablename__ = 'posts'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(100), primary_key=True)
     body = db.Column(db.Text)
     uploaded_content_url = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    author_id = db.Column(db.String(100), db.ForeignKey('users.id'))
     comments = db.relationship('Comment', backref='post_backref', lazy='dynamic')
     likes = db.relationship('PostLike', backref='post_like_backref', lazy='dynamic')
 
@@ -233,11 +232,11 @@ class Post(db.Model):
 class Comment(db.Model):
     __tablename__ = 'comments'
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.String(100), primary_key=True)
     body = db.Column(db.Text)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
-    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    author_id = db.Column(db.String(100), db.ForeignKey('users.id'))
+    post_id = db.Column(db.String(100), db.ForeignKey('posts.id'))
 
     def comment_in_json(self):
 
@@ -257,9 +256,9 @@ class Comment(db.Model):
 class PostLike(db.Model):
     __tablename__ = 'postlikes'
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'))
+    id = db.Column(db.String(100), primary_key=True)
+    user_id = db.Column(db.String(100), db.ForeignKey('users.id'))
+    post_id = db.Column(db.String(100), db.ForeignKey('posts.id'))
 
     def like_json(self):
 
