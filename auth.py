@@ -26,8 +26,6 @@ def login_post():
             try:
                 user = guard.authenticate(func.lower(username), password)
                 if user:
-                    if not user.is_active:
-                        return failure({"error": "User is not active!"})
                     ret = {
                         'access_token': guard.encode_jwt_token(user, ),
                         'user': {
