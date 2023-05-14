@@ -1,4 +1,5 @@
 import random
+import uuid
 from errors import bad_request, forbidden, custom404
 from models import Comment, Post, User, db, current_user, auth_required
 from flask import jsonify, request, Blueprint
@@ -121,7 +122,7 @@ def followed_posts():
 # posts of the followed users in random order
 @posts.route('/api/followed_users_posts')
 @auth_required
-def followed_posts():
+def followed_random_posts():
     u = current_user()
     following_users = u.following_to_list.all()
     followed_posts = []
@@ -150,7 +151,7 @@ def make_comment(id):
     if comm_body == "" or comm_body is None:
         return bad_request("comment cannot be empty.")
     elif u.is_following(post_author) or u.id == post_author.id:        
-        new_comm = Comment(body=comm_body, author_backref=u, post_backref=post_to_comment_in)
+        new_comm = Comment(id=str(uuid.uuid4()), body=comm_body, author_backref=u, post_backref=post_to_comment_in)
         db.session.add(new_comm)
         db.session.commit()    
         return jsonify({"msg": "comment added."})

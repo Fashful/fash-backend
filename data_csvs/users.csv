@@ -1,0 +1,4 @@
+"id","name","hashed_password","email","username","roles","created_at","user_image_url"
+"911952f9-6075-495e-99ba-255f25fd0e52","Jack Chen","$pbkdf2-sha512$25000$FUKIce4dIySkNGbs/f//Pw$prRTq74YQ9UmaNzItuVtURmL/VL2G9VcRmyUgOR5Xlr7mquyKvcMwzvAxF3CP0B4fo5dbTBcFG5D0rF87J1cbA","jc123@gmail.com","jc123",NULL,"2023-05-13 22:51:11.645577",NULL
+"c08f6630-7ff2-4589-b683-b2481e24ab58","John Doe","$pbkdf2-sha512$25000$SInx/n/vvfc.59x7D4HwPg$NoeXtxgRmaXMilp6AvM53QG2YqcB4fzLeFjU0Bb1l5lDeUou7Dn3TKXr3VLO/8j.rqBVB1sw6DIv3QN394a5bw","jd123@gmail.com","jd123",NULL,"2023-05-13 22:32:16.279006",NULL
+"ec2a01ee-754f-45a7-ab71-af116af291b1","Brian Zhang","$pbkdf2-sha512$25000$O0dI6V3rHcOYM6ZUitGaUw$bKZtJCyodplw0Ncw0UzwAC62BEkU1hxrwdCMz1DE2bqVa2IgWTy//o/VVCoUite7iT0ZcOdyYR2AoExFFsnykA","bz123@gmail.com","bz123",NULL,"2023-05-13 22:33:11.628307",NULL

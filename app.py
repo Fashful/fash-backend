@@ -4,6 +4,7 @@ from flask_migrate import Migrate
 import flask_cors
 from models import db, guard, User, Comment, Post, PostLike, Follow
 from dotenv import load_dotenv
+from seed import seed_data
 
 load_dotenv()
 app = Flask(__name__)
@@ -18,6 +19,7 @@ cors.init_app(app)
 
 with app.app_context():
     db.create_all()
+    seed_data()
 
 # blueprint for non-auth parts of app
 from main import main as main_blueprint
