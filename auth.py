@@ -63,11 +63,11 @@ def signup_post():
 
     if user: 
         ret = {'error': 'Username already exists'}
-        return ret, 200
+        return ret, 401
     
     if em: 
         ret = {'error': 'Email already exists'}
-        return ret, 200
+        return ret, 401
 
     try:
         new_user = User(id=str(uuid.uuid4()), email=func.lower(email), name=name, username=username,
