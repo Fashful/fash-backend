@@ -9,7 +9,7 @@ import inspect
 userRoute = Blueprint('users', __name__)
 
 # get user
-@userRoute.route('/api/users/<int:id>')
+@userRoute.route('/api/users/<string:id>')
 def get_user(id):
     user = User.query.get(id)
 
@@ -189,6 +189,7 @@ def unfollow_user(username):
 
 # user followers
 @userRoute.route('/api/followers/<username>')
+@auth_required
 def see_followers(username):
     user = User.query.filter_by(username=username).first()
     u = current_user()
