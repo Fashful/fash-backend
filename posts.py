@@ -1,3 +1,4 @@
+import random
 from errors import bad_request, forbidden, custom404
 from models import Comment, Post, User, db, current_user, auth_required
 from flask import jsonify, request, Blueprint
@@ -115,6 +116,23 @@ def followed_posts():
     for each_post in followed_posts:
         result.append(each_post.to_json())
     
+    return jsonify({"followed_posts": result})
+
+# posts of the followed users in random order
+@posts.route('/api/followed_users_posts')
+@auth_required
+def followed_posts():
+    u = current_user()
+    following_users = u.following_to_list.all()
+    followed_posts = []
+
+    for each_user in following_users:
+        locate_user = User.query.get(each_user.following_to)
+        followed_posts += locate_user.posts
+
+    random.shuffle(followed_posts)
+    result = [each_post.to_json() for each_post in followed_posts]
+
     return jsonify({"followed_posts": result})
 
 

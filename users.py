@@ -137,13 +137,13 @@ def delete_user(id):
     return jsonify({"msg": custom_message}), 204
 
 
-# get all users
+# get all users with more info
 @userRoute.route('/api/users')
 def get_users_as_admin():
     users = User.query.all()
     return jsonify({"users": [each_user.to_json() for each_user in users]}), 200
 
-
+# get all users
 @userRoute.route('/api/all_users')
 def get_all_users():
     users = User.query.all()
