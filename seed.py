@@ -1,4 +1,4 @@
-from app import app, db
+from app import db
 from models import User, Post, Comment, PostLike, Follow
 import csv
 
