@@ -1,5 +1,5 @@
 from errors import bad_request, forbidden, custom404
-from models import Comment, Post, User, db, current_user
+from models import Comment, Post, User, db, current_user, auth_required
 from flask import jsonify, request, Blueprint
 
 posts = Blueprint('posts', __name__)
@@ -39,20 +39,24 @@ def get_post(id):
 
 # create post
 @posts.route('/api/create-post', methods=['POST'])
+@auth_required
 def create_post():
+    u = current_user()
 
-    # author_id = current_user.id
     content_url = request.json.get('content_url', None) 
     body = request.json.get('body', None)
+    # create unique id for post
+    id = len(Post.query.all()) + 1
+    id = str(id)
 
-    new_post = Post(uploaded_content_url=content_url, body=body, author=current_user) # where author is the backref
+    new_post = Post(id=id, uploaded_content_url=content_url, body=body, author=u) # where author is the backref
     db.session.add(new_post)
     db.session.commit()
     return jsonify({"msg": "Post Created."}), 201
 
 
 # edit post
-@posts.route('/api/edit-post/<int:id>', methods=['PUT'])
+@posts.route('/api/edit-post/<string:id>', methods=['PUT'])
 def edit_post(id):
     content_url = request.json.get('content_url', None)
     body = request.json.get('body', None)
@@ -77,15 +81,16 @@ def edit_post(id):
 
 
 # delete post
-@posts.route('/delete-post/<int:id>', methods=['DELETE'])
+@posts.route('/api/delete-post/<string:id>', methods=['DELETE'])
+@auth_required
 def delete_post(id):
-
+    u = current_user()
     post_to_delete = Post.query.get(id)
 
     if not post_to_delete:
         return custom404("post not found")
     
-    elif post_to_delete.author_id != current_user.id:
+    elif post_to_delete.author_id != u.id:
         return forbidden("Operation not allowed!")
     
     else:
@@ -96,8 +101,10 @@ def delete_post(id):
 
 # posts of the followed users
 @posts.route('/api/followed_users_posts')
+@auth_required
 def followed_posts():
-    following_users = current_user.following_to_list.all()
+    u = current_user()
+    following_users = u.following_to_list.all()
     followed_posts = []
     result = []
 
@@ -112,37 +119,23 @@ def followed_posts():
 
 
 # make comment
-@posts.route('/api/posts/<int:id>/make_comment', methods=['POST'])
+@posts.route('/api/posts/<string:id>/make_comment', methods=['POST'])
+@auth_required
 def make_comment(id):
     comm_body = request.json.get('body', None)
     post_to_comment_in = Post.query.get(id)
     post_author = User.query.get(post_to_comment_in.author_id)
+    u = current_user()
 
     if not post_to_comment_in:
         return custom404("Post not found.")
     if comm_body == "" or comm_body is None:
         return bad_request("comment cannot be empty.")
-    elif current_user.is_following(post_author) or current_user.id == post_author.id:        
-        new_comm = Comment(body=comm_body, author_backref=current_user, post_backref=post_to_comment_in)
+    elif u.is_following(post_author) or u.id == post_author.id:        
+        new_comm = Comment(body=comm_body, author_backref=u, post_backref=post_to_comment_in)
         db.session.add(new_comm)
         db.session.commit()    
         return jsonify({"msg": "comment added."})
     else:
         return forbidden("you need to follow the user in order make comments.")
 
-
-# delete comment
-@posts.route('/delete_comment/<int:id>', methods=['DELETE'])
-def delete_comment(id):
-    comm_to_delete = Comment.query.get(id)
-
-    if not comm_to_delete:
-        return custom404("comment not found")
-
-    # needs to be the same author/user who made the comment else an admin or moderator
-    elif current_user.id == comm_to_delete.author_id:      
-        db.session.delete(comm_to_delete)
-        db.session.commit()
-        return jsonify({"msg": "Comment Deleted."}), 204
-    else:
-        return forbidden("Operation not allowed!")

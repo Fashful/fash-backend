@@ -20,6 +20,7 @@ def get_user(id):
 
 # update user name
 @userRoute.route('/api/update_username', methods=['POST'])
+@auth_required
 def update_username():
     new_name = request.json.get('new_username')
     u = current_user()
@@ -40,6 +41,7 @@ def update_username():
 
 # update user email
 @userRoute.route('/api/update_email', methods=['POST'])
+@auth_required
 def update_email():
     new_email = request.json.get('new_email')
     u = current_user()
@@ -58,6 +60,7 @@ def update_email():
 
 # update user image
 @userRoute.route('/api/update_image', methods=['POST'])
+@auth_required
 def update_user_image():
     new_image_url = request.json.get('image_url')
     u = current_user()
@@ -73,6 +76,7 @@ def update_user_image():
 
 # update password
 @userRoute.route('/api/update_password', methods=['PUT'])
+@auth_required
 def update_user_password():
     old_pass = request.json.get('old_password', None)
     new_pass = request.json.get('new_password', None)
@@ -204,6 +208,7 @@ def see_followers(username):
 
 # following to (returns current user following to list)
 @userRoute.route('/api/following/<username>')
+@auth_required
 def see_following_to(username):
     user = User.query.filter_by(username=username).first()
     u = current_user()
