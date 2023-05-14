@@ -98,7 +98,7 @@ def update_user_password():
 
 
 # get logged user profile
-@userRoute.route('/api/user_profile/<int:id>')
+@userRoute.route('/api/user_profile/<string:id>')
 def get_user_profile(id):    
 
     user = User.query.get(id)

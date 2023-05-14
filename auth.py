@@ -33,6 +33,7 @@ def login_post():
                             'email': user.email,
                             'name': user.name,
                             'username': user.username,
+                            'image': user.user_image_url
                         }
                     }
                     return success(data=ret)
