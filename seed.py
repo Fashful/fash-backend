@@ -11,16 +11,16 @@ def csv_to_dict(filename):
 users = csv_to_dict('data_csvs/users.csv')
 posts = csv_to_dict('data_csvs/posts.csv')
 comments = csv_to_dict('data_csvs/comments.csv')
-post_likes = csv_to_dict('data_csvs/post_likes.csv')
+post_likes = csv_to_dict('data_csvs/postlikes.csv')
 follows = csv_to_dict('data_csvs/follows.csv')
 
 def seed_data():
     # Delete all existing data from the tables
-    db.session.query(User).delete()
-    db.session.query(Post).delete()
     db.session.query(Comment).delete()
     db.session.query(PostLike).delete()
     db.session.query(Follow).delete()
+    db.session.query(Post).delete()
+    db.session.query(User).delete()
 
     # Insert new data into the tables
     for user in users:
