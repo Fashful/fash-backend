@@ -2,10 +2,10 @@ from datetime import datetime
 from flask import abort
 from dataclasses import dataclass
 from flask_sqlalchemy import SQLAlchemy
-import flask_praetorian
+from flask_praetorian import Praetorian, current_user, auth_required
 
 db = SQLAlchemy()
-guard = flask_praetorian.Praetorian()
+guard = Praetorian()
 
 class Follow(db.Model):
     __tablename__ = 'follows'
@@ -26,9 +26,9 @@ class User(db.Model):
     __tablename__ = 'users'
 
     id = db.Column(db.String(100), primary_key=True)
-    email = db.Column(db.String(100), unique=True, index=True)
-    username = db.Column(db.String(100), unique=True, index=True)
     name = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+    username = db.Column(db.String(100), unique=True)
     hashed_password = db.Column(db.Text)
     roles = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -88,18 +88,22 @@ class User(db.Model):
         return self.hashed_password
 
     @property
-    def email(self):
+    def get_email(self):
         return self.email
+    
+    @property
+    def get_username(self):
+        return self.username
 
     @classmethod
-    def lookup(cls, username):
+    def lookup(cls, email):
         """
         *Required Method*
         flask-praetorian requires that the user class implements a ``lookup()``
         class method that takes a single ``username`` argument and returns a user
         instance if there is one that matches or ``None`` if there is not.
         """
-        return cls.query.filter_by(username=username).one_or_none()
+        return cls.query.filter_by(email=email).one_or_none()
 
     @classmethod
     def identify(cls, id):

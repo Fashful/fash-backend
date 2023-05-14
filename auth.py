@@ -21,7 +21,7 @@ def login_post():
     password = body['password']
     try:
         # authenticate user and send token
-        email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+        user = User.query.filter(func.lower(User.email) == func.lower(email)).first()
         if user:
             try:
                 user = guard.authenticate(func.lower(email), password)
@@ -32,6 +32,7 @@ def login_post():
                             'id': user.id,
                             'email': user.email,
                             'name': user.name,
+                            'username': user.username,
                         }
                     }
                     return success(data=ret)
@@ -57,21 +58,21 @@ def signup_post():
     password = body['password']
 
     # if this returns a user, then the email already exists in database
-    user = User.query.filter(func.lower(User.username) == func.lower(username)).first()
-    email = User.query.filter(func.lower(User.email) == func.lower(email)).first()
+    user = User.query.filter(User.username==username).first()
+    em = User.query.filter(func.lower(User.email) == func.lower(email)).first()
 
     if user: 
         ret = {'error': 'Username already exists'}
         return ret, 200
     
-    if email: 
+    if em: 
         ret = {'error': 'Email already exists'}
         return ret, 200
 
     try:
         new_user = User(id=str(uuid.uuid4()), email=func.lower(email), name=name, username=username,
                     hashed_password=guard.hash_password(password))
-
+        
         # add the new user to the database
         db.session.add(new_user)
         db.session.commit()

@@ -1,28 +1,11 @@
 from urllib import response
 from flask import request, jsonify
-from posts import posts
-
-# 404 error for pages
-@posts.app_errorhandler(404)
-def page_not_found(e):
-    # only accepting json request headers in response
-    if request.accept_mimetypes.accept_json:
-        response = jsonify({ "msg": 'Not Found'})
-        return response, 404
 
 # custom 404 error
 def custom404(message):
     # only accepting json request headers in response
     if request.accept_mimetypes.accept_json:
         response = jsonify({ "msg": message })
-        return response
-
-# 500 error
-@posts.app_errorhandler(500)
-def page_not_found(e):
-    # only accepting json request headers in response
-    if request.accept_mimetypes.accept_json:
-        response = jsonify({ "msg": 'Internal Server Error'})
         return response
 
 # 403 forbidden

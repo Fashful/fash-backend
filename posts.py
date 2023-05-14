@@ -1,8 +1,24 @@
-from errors import bad_request, forbidden, page_not_found, custom404
+from errors import bad_request, forbidden, custom404
 from models import Comment, Post, User, db, current_user
 from flask import jsonify, request, Blueprint
 
 posts = Blueprint('posts', __name__)
+
+# 404 error for pages
+@posts.app_errorhandler(404)
+def page_not_found(e):
+    # only accepting json request headers in response
+    if request.accept_mimetypes.accept_json:
+        response = jsonify({ "msg": 'Not Found'})
+        return response, 404
+
+# 500 error
+@posts.app_errorhandler(500)
+def page_not_found(e):
+    # only accepting json request headers in response
+    if request.accept_mimetypes.accept_json:
+        response = jsonify({ "msg": 'Internal Server Error'})
+        return response
 
 # get all posts
 @posts.route('/api/posts', methods=['GET'])
