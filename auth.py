@@ -27,7 +27,8 @@ def login_post():
                 user = guard.authenticate(func.lower(email), password)
                 if user:
                     ret = {
-                        'access_token': guard.encode_jwt_token(user, ),
+                        # make access_token not expire 
+                        'access_token': guard.encode_jwt_token(user, override_expires_in=None),
                         'user': {
                             'id': user.id,
                             'email': user.email,
