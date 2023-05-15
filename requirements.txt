@@ -23,6 +23,8 @@ itsdangerous==2.1.2
 Jinja2==3.1.2
 Mako==1.2.4
 MarkupSafe==2.1.1
+numpy==1.24.3
+opencv-python==4.7.0.72
 passlib==1.7.4
 pendulum==2.1.2
 psycopg2==2.9.3
