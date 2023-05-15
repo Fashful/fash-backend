@@ -30,8 +30,16 @@ def get_posts():
         'posts': [each_post.to_json() for each_post in posts]        
     })
 
+# get all posts by a user
+@posts.route('/api/posts/<string:id>', methods=['GET'])
+def get_posts_by_user(id):
+    posts = Post.query.filter_by(author_id=id).all()
+    return jsonify({
+        'posts': [each_post.to_json() for each_post in posts]        
+    })
+
 # get a particular post
-@posts.route('/api/posts/<int:id>', methods=['GET'])
+@posts.route('/api/posts/<string:id>', methods=['GET'])
 def get_post(id):
     post = Post.query.get(id)
     if not post:
