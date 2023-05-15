@@ -2,9 +2,9 @@ from datetime import datetime
 from datetime import timezone
 from datetime import timedelta
 from errors import bad_request, custom404, forbidden
-from models import User, db, current_user, auth_required
+from models import Post, User, db, current_user, auth_required
 from flask import jsonify, request, Blueprint
-import inspect
+import cv2
 
 userRoute = Blueprint('users', __name__)
 
@@ -108,7 +108,7 @@ def get_user_profile(id):
     return jsonify(user.to_json())
 
 # Delete User
-@userRoute.route('/api/user/<int:id>/delete', methods=['POST'])
+@userRoute.route('/api/user/<string:id>/delete', methods=['POST'])
 def delete_user(id):
     user = User.query.get(id)
 
@@ -225,3 +225,46 @@ def see_following_to(username):
         return jsonify({"following": following_to_data})
     else:
         return forbidden("not allowed.")
+    
+# search for users or posts with a keyword
+@userRoute.route('/api/search/<string:keyword>')
+def search(keyword):
+    users = User.query.filter(User.username.contains(keyword)).all()
+    posts = Post.query.filter(Post.body.contains(keyword)).all()
+    return jsonify({"users": [user.to_json() for user in users], "posts": [post.to_json() for post in posts]})
+
+# get similar posts for feed
+@userRoute.route('/api/similar_color_posts', methods=['GET'])
+@auth_required
+def similar_color_posts():
+    user = current_user()
+
+    # Get the liked posts of the user
+    liked_posts = [post for post in user.liked]
+
+    liked_hists = []
+    for post in liked_posts:
+        image = cv2.imread(post.uploaded_content_url)
+        hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        hist = cv2.normalize(hist, hist).flatten()
+        liked_hists.append(hist)
+
+    # Get the posts that are similar
+    similar_posts = []
+    for post in Post.query.all():
+        image = cv2.imread(post.uploaded_content_url)
+        hist = cv2.calcHist([image], [0, 1, 2], None, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        hist = cv2.normalize(hist, hist).flatten()
+
+        # Compare the histograms using the Bhattacharyya distance
+        similarity = cv2.compareHist(liked_hists[0], hist, cv2.HISTCMP_BHATTACHARYYA)
+        for i in range(1, len(liked_hists)):
+            similarity += cv2.compareHist(liked_hists[i], hist, cv2.HISTCMP_BHATTACHARYYA)
+        similarity /= len(liked_hists)
+
+        # Add the post to the list
+        if similarity < 0.5:
+            similar_posts.append(post.to_json())
+
+    # Return the list of similar color posts
+    return jsonify({'similar_posts': similar_posts})
