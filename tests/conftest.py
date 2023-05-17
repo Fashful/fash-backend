@@ -29,10 +29,9 @@ def runner(test_app):
 def user(test_db):
     test_user = User(id=str(uuid.uuid4()), email="test@test.com", name='Test V', username="test",
                     hashed_password=guard.hash_password('password'))
-    with test_app.app_context():
-        test_db.session.add(test_user)
-        test_db.session.commit()
-        yield
-        test_db.session.delete(test_user)
-        test_db.session.commit()
+    test_db.session.add(test_user)
+    test_db.session.commit()
+    yield
+    test_db.session.delete(test_user)
+    test_db.session.commit()
 
