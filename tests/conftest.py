@@ -33,6 +33,8 @@ def user(test_db):
     test_db.session.add(test_user)
     test_db.session.commit()
     yield userid
-    test_db.session.delete(test_user)
-    test_db.session.commit()
+    u = User.query.get(userid)
+    if u:
+        test_db.session.delete(test_user)
+        test_db.session.commit()
 
