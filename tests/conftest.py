@@ -27,11 +27,12 @@ def runner(test_app):
 
 @pytest.fixture
 def user(test_db):
-    test_user = User(id=str(uuid.uuid4()), email="test@test.com", name='Test V', username="test",
+    userid = str(uuid.uuid4())
+    test_user = User(id=userid, email="test@test.com", name='Test V', username="test",
                     hashed_password=guard.hash_password('password'))
     test_db.session.add(test_user)
     test_db.session.commit()
-    yield
+    yield userid
     test_db.session.delete(test_user)
     test_db.session.commit()
 
