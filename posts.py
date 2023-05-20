@@ -27,7 +27,7 @@ def page_not_found(e):
 def get_posts():
     posts = Post.query.all()
     return jsonify({
-        'posts': [each_post.to_json() for each_post in posts]        
+        'posts': [each_post.to_json() for each_post in posts],   
     })
 
 # get all posts by a user
@@ -188,20 +188,21 @@ def like_unlike(id): # id of post to like or unlike
 
     return jsonify({ "msg": "Post Liked", "post_id": id, "updated_post": Post.query.get(id).to_json() }), 200
 
-# Get all likes for a post in a list of user ids
-@posts.route('/api/get_likes/<string:id>', methods=['GET'])
+# Get all likes for all posts in a list of user ids
+@posts.route('/api/get_all_likes', methods=['POST'])
 @auth_required
-def get_likes(id):
-    located_post = Post.query.get(id)
-    if not located_post:
-        return custom404("Post not found.")
+def get_all_likes():
+    u = current_user()
+    user_ids = request.json.get('user_ids', None)
+    if not user_ids:
+        return bad_request("user_ids cannot be empty.")
 
-    likes = PostLike.query.filter_by(post_id=id).all()
-    if not likes:
-        return jsonify({ "msg": "No likes found for this post." }), 200
+    all_likes = []
+    for each_id in user_ids:
+        located_user = User.query.get(each_id)
+        if not located_user:
+            return custom404("User not found.")
+        all_likes += located_user.likes
 
-    likes_list = []
-    for like in likes:
-        likes_list.append(like.user_id)
-
-    return jsonify({ "msg": "Likes found.", "likes": likes_list }), 200
+    result = [each_like.to_json() for each_like in all_likes]
+    return jsonify({"all_likes": result})
