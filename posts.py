@@ -166,9 +166,9 @@ def make_comment(id):
     else:
         return forbidden("you need to follow the user in order make comments.")
     
-@posts.route('/api/like_unlike/<string:id>/', methods=['POST'])
+@posts.route('/api/like_unlike/<string:id>', methods=['POST'])
 @auth_required
-def like_or_unlike(id): # id of post to like or unlike
+def like_unlike(id): # id of post to like or unlike
     u = current_user()
     located_post = Post.query.get(id)
     if not located_post:
@@ -189,7 +189,7 @@ def like_or_unlike(id): # id of post to like or unlike
     return jsonify({ "msg": "Post Liked", "post_id": id, "updated_post": Post.query.get(id).to_json() }), 200
 
 # Get all likes for a post in a list of user ids
-@posts.route('/api/get_likes/<string:id>/', methods=['GET'])
+@posts.route('/api/get_likes/<string:id>', methods=['GET'])
 @auth_required
 def get_likes(id):
     located_post = Post.query.get(id)
