@@ -165,4 +165,3 @@ def make_comment(id):
         return jsonify({"msg": "comment added."})
     else:
         return forbidden("you need to follow the user in order make comments.")
-

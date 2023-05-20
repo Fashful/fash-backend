@@ -26,3 +26,21 @@ def like_or_unlike(id): # id of post to like or unlike
     db.session.commit()
 
     return jsonify({ "msg": "Post Liked", "post_id": id, "updated_post": Post.query.get(id).to_json() }), 200
+
+# Get all likes for a post in a list of user ids
+@likesRoute.route('/api/get_likes/<string:id>/', methods=['GET'])
+@auth_required
+def get_likes(id):
+    located_post = Post.query.get(id)
+    if not located_post:
+        return custom404("Post not found.")
+
+    likes = PostLike.query.filter_by(post_id=id).all()
+    if not likes:
+        return jsonify({ "msg": "No likes found for this post." }), 200
+
+    likes_list = []
+    for like in likes:
+        likes_list.append(like.user_id)
+
+    return jsonify({ "msg": "Likes found.", "likes": likes_list }), 200
