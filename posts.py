@@ -188,19 +188,22 @@ def like_unlike(id): # id of post to like or unlike
 
     return jsonify({ "msg": "Post Liked", "post_id": id, "updated_post": Post.query.get(id).to_json() }), 200
 
-# Get all likes for all posts in a list of user ids
-@posts.route('/api/get_all_likes', methods=['GET'])
-def get_all_likes():
-    user_ids = request.json.get('user_ids', None)
-    if not user_ids:
-        return bad_request("user_ids cannot be empty.")
+@posts.route('/api/posts/<string:id>/liked_users', methods=['GET'])
+def get_liked_users(id):
+    located_post = Post.query.get(id)
+    if not located_post:
+        return custom404("Post not found.")
 
-    all_likes = []
-    for each_id in user_ids:
-        located_user = User.query.get(each_id)
-        if not located_user:
-            return custom404("User not found.")
-        all_likes += located_user.likes
+    liked_users = [like.user_like_backref.to_json() for like in located_post.likes]
+    
+    return jsonify({"liked_users": liked_users})
 
-    result = [each_like.to_json() for each_like in all_likes]
-    return jsonify({"all_likes": result})
+@posts.route('/api/get_like_for_all_posts', methods=['GET'])
+def get_like_for_all_posts():
+    all_posts = Post.query.all()
+    result = []
+    for each_post in all_posts:
+        result.append({each_post.id: [like.user_like_backref.id for like in each_post.likes]})
+    
+    return jsonify({"all_posts_likes": result})
+
