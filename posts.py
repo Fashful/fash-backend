@@ -190,9 +190,7 @@ def like_unlike(id): # id of post to like or unlike
 
 # Get all likes for all posts in a list of user ids
 @posts.route('/api/get_all_likes', methods=['POST'])
-@auth_required
 def get_all_likes():
-    u = current_user()
     user_ids = request.json.get('user_ids', None)
     if not user_ids:
         return bad_request("user_ids cannot be empty.")
