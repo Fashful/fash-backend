@@ -277,7 +277,8 @@ class PostLike(db.Model):
             'id': self.id,
             'liked_by': self.user_id,
             'post_liked': self.post_id,
-            'liked_by_username': User.query.get(self.user_id).username
+            'liked_by_username': User.query.get(self.user_id).username,
+            'liked_by_users': [each_user.less_user_info_json() for each_user in User.query.get(self.user_id).got_followed_back_list.all()]
         }
 
         return json_response
