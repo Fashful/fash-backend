@@ -189,7 +189,7 @@ def like_unlike(id): # id of post to like or unlike
     return jsonify({ "msg": "Post Liked", "post_id": id, "updated_post": Post.query.get(id).to_json() }), 200
 
 # Get all likes for all posts in a list of user ids
-@posts.route('/api/get_all_likes', methods=['POST'])
+@posts.route('/api/get_all_likes', methods=['GET'])
 def get_all_likes():
     user_ids = request.json.get('user_ids', None)
     if not user_ids:
