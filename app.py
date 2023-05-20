@@ -28,9 +28,6 @@ app.register_blueprint(main_blueprint)
 from auth import auth as auth_blueprint
 app.register_blueprint(auth_blueprint)
 
-from likes import likesRoute as likes_blueprint
-app.register_blueprint(likes_blueprint)
-
 from users import userRoute as users_blueprint
 app.register_blueprint(users_blueprint)
 
