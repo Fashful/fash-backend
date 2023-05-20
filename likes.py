@@ -5,6 +5,13 @@ from errors import custom404, bad_request
 
 likesRoute = Blueprint('likesRoute', __name__)
 
+@likesRoute.after_request  # blueprint can also be app~~
+def after_request(response):
+    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add('Access-Control-Allow-Headers', "*")
+    response.headers.add('Access-Control-Allow-Methods', "*")
+    return response
+
 @likesRoute.route('/api/like_unlike/<string:id>/', methods=['POST'])
 @auth_required
 def like_or_unlike(id): # id of post to like or unlike

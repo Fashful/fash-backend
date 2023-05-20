@@ -37,13 +37,8 @@ app.register_blueprint(users_blueprint)
 from posts import posts as posts_blueprint
 app.register_blueprint(posts_blueprint)
 
-# @app.route('/')
-# def hello():
-#     return "<h1>Hello World</h1>"
-
 # sample api endpoint
 @app.route('/api/test', methods=['GET', 'POST'])
-# @roles_accepted('ADMIN', 'DIAPROV_ADMIN', 'DIAPROV_USER')
 def test():
     if request.method == 'POST':
         # get parameters from post request
