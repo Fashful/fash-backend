@@ -30,6 +30,15 @@ def get_posts():
         'posts': [each_post.to_json() for each_post in posts],   
     })
 
+# get all posts in random order
+@posts.route('/api/posts/random', methods=['GET'])
+def get_posts_random():
+    posts = Post.query.all()
+    random.shuffle(posts)
+    return jsonify({
+        'posts': [each_post.to_json() for each_post in posts],   
+    })
+
 # get all posts by a user
 @posts.route('/api/posts/<string:id>', methods=['GET'])
 def get_posts_by_user(id):
